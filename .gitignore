@@ -22,7 +22,7 @@ ENV/
 
 # Streamlit secrets
 .streamlit/secrets.toml
-
+frontend/.streamlit/secrets.toml
 # ==============================
 # IDE / Editor
 # ==============================
