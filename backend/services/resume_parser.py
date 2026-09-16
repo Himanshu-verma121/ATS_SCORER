@@ -1,5 +1,5 @@
 import io
-import magic
+import os
 from typing import Tuple, Optional
 
 import pdfplumber
@@ -21,32 +21,39 @@ class FileValidationError(Exception):
     """Custom exception for file validation errors."""
     ...
     
-def validate_file(file_data:bytes, filename:str)->Tuple[bool, str, Optional[str]]:
+     
+def validate_file(file_data: bytes, filename: str) -> Tuple[bool, str, Optional[str]]:
     file_size_bytes = len(file_data)
+
     if file_size_bytes > MAX_FILE_SIZE_BYTES:
         size_mb = file_size_bytes / (1024 * 1024)
         return False, (
-            f'File size exceeds the maximum limit of {MAX_FILE_SIZE_MB} MB. '
+            f'File size exceeds the maximum limit of {MAX_FILE_SIZE_MB} MB.'
         ), None
-        
+
     if file_size_bytes == 0:
         return False, 'Uploaded file is empty.', None
 
-    try:
-        mime_type = magic.from_buffer(file_data, mime=True)
-    except Exception as e:
-        return False, f'Error determining file type: {str(e)}', None
-    
+    extension = os.path.splitext(filename)[1].lower()
+
+    if extension == '.pdf':
+        mime_type = 'application/pdf'
+    elif extension == '.docx':
+        mime_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    elif extension == '.doc':
+        mime_type = 'application/msword'
+    else:
+        mime_type = ''
+
     if mime_type not in SUPPORTED_MIME_TYPES:
         supported = ', '.join(SUPPORTED_MIME_TYPES.keys()).upper()
 
         return False, (
-            f'Unsupported file type: {mime_type}. Supported types are: {supported}.'
+            f'Unsupported file type: {mime_type or extension}. '
+            f'Supported types are: {supported}.'
         ), None
-    
-    return True, '', SUPPORTED_MIME_TYPES[mime_type]
-        
-        
+
+    return True, '', SUPPORTED_MIME_TYPES[mime_type]        
         
 def _extract_pdf_hyperlinks(file_data: bytes) -> str:
     urls = []
@@ -232,8 +239,7 @@ def parse_resume_file(file_data: bytes, filename: str)-> Tuple[str, dict]:
         log_info(f'Extracted {len(text)} chars from {filename}', context='parse_resume_file')
 
     except FileParsingError:
-        raise   # Re-raise unchanged
-
+        raise   
     except Exception as e:
         log_error(e, context='parse_resume_file_extraction')
         raise FileParsingError(

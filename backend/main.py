@@ -4,13 +4,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.core.config import(
-    ALLOWED_ORIGINS,
-    APP_DESCRIPTION,
-    APP_TITEL,
-    APP_VERSION,
-    SPACY_MODEL_PRIMARY,
-    SPACY_MODEL_SECONDARY, 
-    SENTENCE_TRANSFORMER_MODEL
+    ALLOWED_ORIGINS, 
+    APP_DESCRIPTION, 
+    APP_TITLE, 
+    APP_VERSION, 
+    SPACY_MODEL_PRIMARY, 
+    SPACY_MODEL_SECONDARY, SENTENCE_TRANSFORMER_MODEL
 )
 from backend.api.routes import router
 
@@ -42,7 +41,7 @@ async def lifespan(app:FastAPI):
     logger.info('shutting down the api!!')
 
 app=FastAPI(
-    title=APP_TITEL, 
+    title=APP_TITLE, 
     description=APP_DESCRIPTION, 
     version=APP_VERSION, 
     lifespan=lifespan,
@@ -61,11 +60,25 @@ app.add_middleware(
 
 app.include_router(router)
 
+@app.get('/')
+async def root():
+    return {
+        'name':      'ATS Resume Analyzer API',
+        'version':   '2.0.0',
+        'endpoints': {
+            'POST   /api/v1/analyze-resume': 'Analyze a resume',
+            'GET    /api/v1/history':        'Get user history',
+            'DELETE /api/v1/history/:id':    'Delete a history entry',
+            'GET    /api/v1/health':         'Health check',
+            'POST   /api/v1/generate-pdf':   'Generate PDF report from data',
+        },
+    }
+
 if __name__=='__main__':
     import uvicorn
     uvicorn.run(
         'backend.main:app',
-        host = '0.0.0.0',
-        port = 8000,
-        reload = True,   
+        host    = '0.0.0.0',
+        port    = 8000,
+        reload  = True,   
     )

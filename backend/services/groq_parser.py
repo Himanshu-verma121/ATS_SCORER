@@ -7,7 +7,7 @@ from groq import Groq
 
 logger=logging.getLogger('ats_resume_scorer')
 
-GROQ_MODEL = 'llama-3.3-70b-versatile'
+GROQ_MODEL = 'openai/gpt-oss-120b'
 
 _client=None
 
@@ -18,7 +18,7 @@ def _get_client()-> Groq:
 
         if not api_key:
             raise ValueError("GROQ_API_KEY is not set in environment variables.")
-            _client=Groq(api_key=api_key)
+        _client=Groq(api_key=api_key)
     return _client
 
 RESUME_SYSTEM_PROMPT = (
@@ -80,7 +80,7 @@ Resume Text:
 
 def _call_groq(client: Groq, system_prompt:str, user_prompt:str)-> str:
     
-    response = client.chat.completion.create(
+    response = client.chat.completions.create(
         model=GROQ_MODEL,
         messages=[
             {"role": "system", "content": system_prompt},
@@ -116,7 +116,7 @@ def parse_resume(raw_text: str)->Dict:
     raw_response=_call_groq(client, RESUME_SYSTEM_PROMPT, prompt)
     result=_try_parse_json(raw_response)
 
-    if result is None:
+    if result is not None:
         return _validate_resume_result(result)
     
 
@@ -241,7 +241,7 @@ def _validate_resume_result(result: dict) -> dict:
         exp.setdefault("end_date", "")
         exp.setdefault("duration_months", 0)
         exp.setdefault("description", "")
-        #Ensure duration_months is an int
+       
         try:
             exp["duration_months"] = int(exp["duration_months"])
         except (ValueError, TypeError):
