@@ -48,13 +48,19 @@ def _verify_token(token: str) -> dict:
         signing_key = jwks_client.get_signing_key_from_jwt(token).key
 
         print("AUTH: signing key received", flush=True)
+        print("AUTH: starting jwt.decode...", flush=True)
 
-        return jwt.decode(
+        payload = jwt.decode(
             token,
             signing_key,
             algorithms=_ASYMMETRIC_ALGS,
             audience='authenticated',
         )
+
+        print("AUTH: jwt.decode completed", flush=True)
+        print(f"AUTH: subject exists = {bool(payload.get('sub'))}", flush=True)
+
+        return payload
 
     if alg == 'HS256':
         print("AUTH: using HS256", flush=True)
