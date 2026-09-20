@@ -97,6 +97,8 @@ def get_current_user(
         )
     try:
         payload = _verify_token(creds.credentials)
+        print("AUTH: _verify_token returned successfully", flush=True)
+        
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
