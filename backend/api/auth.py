@@ -125,9 +125,11 @@ def get_current_user(
         )
 
     user_id = payload.get('sub')
+    print(f"AUTH: user_id = {user_id}", flush=True)
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Token missing subject claim',
         )
+    print("AUTH: get_current_user returning user_id", flush=True)
     return user_id
