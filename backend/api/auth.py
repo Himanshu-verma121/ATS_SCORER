@@ -26,7 +26,6 @@ def _get_jwks_client() -> jwt.PyJWKClient | None:
 
 
 def _verify_token(token: str) -> dict:
-    print("AUTH: token verification started", flush=True)
 
     header = jwt.get_unverified_header(token)
     alg = header.get('alg')
@@ -34,7 +33,6 @@ def _verify_token(token: str) -> dict:
     print(f"AUTH: algorithm = {alg}", flush=True)
 
     if alg in _ASYMMETRIC_ALGS:
-        print("AUTH: using Supabase JWKS", flush=True)
 
         jwks_client = _get_jwks_client()
 
@@ -43,12 +41,9 @@ def _verify_token(token: str) -> dict:
                 'SUPABASE_URL not configured — cannot fetch JWKS to verify token'
             )
 
-        print("AUTH: fetching signing key...", flush=True)
 
         signing_key = jwks_client.get_signing_key_from_jwt(token).key
 
-        print("AUTH: signing key received", flush=True)
-        print("AUTH: starting jwt.decode...", flush=True)
 
         payload = jwt.decode(
             token,
@@ -57,13 +52,10 @@ def _verify_token(token: str) -> dict:
             audience='authenticated',
         )
 
-        print("AUTH: jwt.decode completed", flush=True)
-        print(f"AUTH: subject exists = {bool(payload.get('sub'))}", flush=True)
 
         return payload
 
     if alg == 'HS256':
-        print("AUTH: using HS256", flush=True)
 
         if not SUPABASE_JWT_SECRET:
             raise jwt.InvalidTokenError(
@@ -97,7 +89,6 @@ def get_current_user(
         )
     try:
         payload = _verify_token(creds.credentials)
-        print("AUTH: _verify_token returned successfully", flush=True)
         
     except jwt.ExpiredSignatureError:
         raise HTTPException(
@@ -106,7 +97,6 @@ def get_current_user(
             headers={'WWW-Authenticate': 'Bearer'},
         )
     except jwt.InvalidTokenError as exc:
-        print(f"AUTH ERROR: {type(exc).__name__}: {exc}", flush=True)
 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -114,7 +104,6 @@ def get_current_user(
             headers={'WWW-Authenticate': 'Bearer'},
         )
     except Exception as exc:
-        print(f"AUTH ERROR: {type(exc).__name__}: {exc}", flush=True)
 
         logger.warning(f'JWT verification failed: {exc}')
 
@@ -125,11 +114,9 @@ def get_current_user(
         )
 
     user_id = payload.get('sub')
-    print(f"AUTH: user_id = {user_id}", flush=True)
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Token missing subject claim',
         )
-    print("AUTH: get_current_user returning user_id", flush=True)
     return user_id
