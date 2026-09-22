@@ -27,7 +27,6 @@ async def analyze_resume(
     job_description: str = Form('', description='Job description text (optional)'),
     user_id: str = Depends(get_current_user),
 ):
-    print("ANALYZE: endpoint started", flush=True)
     warnings: List[str] = []
 
     nlp      = request.app.state.nlp
@@ -57,7 +56,6 @@ async def analyze_resume(
     #Full Analysis Pipeline 
     try:
         from backend.services.resume_analyzer import analyze_full_resume
-        print("ANALYZE: starting analysis service", flush=True)
         result = analyze_full_resume(
             resume_text=resume_text,
             nlp=nlp,
@@ -65,7 +63,6 @@ async def analyze_resume(
             job_description=job_description
         )
         
-        print("ANALYZE: analysis service completed", flush=True)
 
     except Exception as exc:
         logger.error(f'Full analysis pipeline failed: {exc}')

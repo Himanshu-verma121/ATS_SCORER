@@ -30,8 +30,6 @@ def _verify_token(token: str) -> dict:
     header = jwt.get_unverified_header(token)
     alg = header.get('alg')
 
-    print(f"AUTH: algorithm = {alg}", flush=True)
-
     if alg in _ASYMMETRIC_ALGS:
 
         jwks_client = _get_jwks_client()

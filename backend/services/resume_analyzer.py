@@ -16,11 +16,8 @@ def analyze_full_resume(
     import logging
     logger = logging.getLogger('ats_resume_scorer')
 
-    print("ANALYZER: started", flush=True)
 
-    print("ANALYZER: starting Groq resume parsing", flush=True)
     parsed_resume = parse_resume(resume_text)
-    print("ANALYZER: Groq resume parsing completed", flush=True)
 
     logger.info(f"Groq parsed summary: {parsed_resume.get('professional_summary', '')[:100]!r}")
     logger.info(f"Groq parsed skills count: {len(parsed_resume.get('skills', []))}")
@@ -45,7 +42,6 @@ def analyze_full_resume(
         'portfolio': None,
     }
 
-    print("ANALYZER: starting skill validation", flush=True)
 
     skill_validation = validate_skills_with_projects(
         skills=skills,
@@ -54,18 +50,15 @@ def analyze_full_resume(
         embedder=embedder,
     )
 
-    print("ANALYZER: skill validation completed", flush=True)
 
     jd_comparison_result = None
     jd_keywords = None
 
     if job_description and job_description.strip():
 
-        print("ANALYZER: starting JD parsing", flush=True)
 
         parsed_jd = parse_job_description(job_description.strip())
 
-        print("ANALYZER: JD parsing completed", flush=True)
 
         jd_keywords = list(set(
             parsed_jd.get('keywords', []) +
@@ -73,7 +66,6 @@ def analyze_full_resume(
             parsed_jd.get('preferred_skills', [])
         ))
 
-        print("ANALYZER: starting JD comparison", flush=True)
 
         jd_comparison_result = compare_resume_with_jd(
             resume_text=resume_text,
@@ -85,7 +77,6 @@ def analyze_full_resume(
             nlp=nlp,
         )
 
-        print("ANALYZER: JD comparison completed", flush=True)
 
     from backend.utils.file_utils import (
         get_default_grammar_results, get_default_location_results,
@@ -94,7 +85,6 @@ def analyze_full_resume(
     grammar_results  = get_default_grammar_results()
     location_results = get_default_location_results()
 
-    print("ANALYZER: starting ATS score calculation", flush=True)
 
     scores = calculate_overall_score(
         text=resume_text,
@@ -109,9 +99,6 @@ def analyze_full_resume(
         experience_months=experience_months,
     )
 
-    print("ANALYZER: ATS score calculation completed", flush=True)
-
-    print("ANALYZER: starting feedback analysis", flush=True)
 
     detailed_feedback = analyze_issues(
         resume_text=resume_text,
@@ -124,13 +111,7 @@ def analyze_full_resume(
         contact_info=contact_info,
     )
 
-    print("ANALYZER: feedback analysis completed", flush=True)
-
-    print("ANALYZER: generating issues summary", flush=True)
-
     issues_summary = generate_issues_summary(detailed_feedback)
-
-    print("ANALYZER: issues summary completed", flush=True)
 
     validated_raw   = skill_validation.get('validated_skills', [])
     unvalidated_raw = skill_validation.get('unvalidated_skills', [])
@@ -155,8 +136,6 @@ def analyze_full_resume(
         "validated_count": len(validated_raw),
         "validation_pct":  val_pct,
     }
-
-    print("ANALYZER: building final result", flush=True)
 
     return {
         "ATS_score":          scores['overall_score'],
